@@ -27,6 +27,11 @@ const pool = mysql.createPool({
 
 const idsUsados = [];
 
+async function existeNaTabela(tabela,id) {
+  const [rows] = await pool.query(`SELECT 1 FROM ${tabela} WHERE id = ? LIMIT 1`,[id]);
+  return rows.length > 0;
+}
+
 function geraIdUnico(idsUsados, min = 1, max = 9999) {
     let randint;
     do {
@@ -47,12 +52,6 @@ app.get('/cores', async (req, res) => {
   try {
     const [results] = await pool.query('SELECT * FROM wssc2.cores_lams');
     
-    if (results.length === 0){
-      return res.status(404).json({
-        error: 'Nenhuma cor encontrada'
-      });
-    }
-
     res.json(results); 
 
   } catch (err) {
@@ -128,13 +127,7 @@ app.put('/cores/:id', async (req, res) => {
 
 app.get('/armazens', async (req, res) => {
   try {
-    const [results] = await pool.query('SELECT * FROM wssc2.stg');
-    
-    if (results.length === 0){
-      return res.status(404).json({
-        error: 'Nenhum armazém encontrado'
-      });
-    }
+    const [results] = await pool.query('SELECT * FROM wssc2.stg'); 
 
     res.json(results); 
   } catch (err) {
@@ -212,12 +205,6 @@ app.put('/armazens/:id', async (req,res) => {
 app.get('/buffers', async (req, res) => {
   try {
     const [results] = await pool.query('SELECT * FROM wssc2.buffers');
-    
-    if (results.length === 0){
-      return res.status(404).json({
-        error: 'Nenhum buffer encontrado'
-      });
-    }
 
     res.json(results); 
   } catch (err) {
@@ -295,13 +282,7 @@ app.put('/buffers/:id', async (req, res) => {
 app.get('/blocos', async (req, res) => {
   try {
     const [results] = await pool.query('SELECT * FROM wssc2.blocos');
-    
-    if (results.length === 0){
-      return res.status(404).json({
-        error: 'Nenhum bloco encontrado'
-      });
-    }
-
+  
     res.json(results); 
   } catch (err) {
     console.error(err);
@@ -313,14 +294,12 @@ app.get('/blocos', async (req, res) => {
 app.get('/blocos/:storageId', async (req, res) => {
   try {
     const {storageId} = req.params
+
+    if (!(await existeNaTabela('stg',storageId))) {
+      return res.status(404).json({error: 'Armazém não encontrado!'})
+    }
     const [results] = await pool.query('SELECT * FROM wssc2.blocos WHERE storageId = ?',
       [storageId]);
-
-    if (results.length === 0){
-      return res.status(404).json({
-        error: 'Nenhum bloco encontrado'
-      });
-    }
 
     res.json(results); 
   } catch (err) {
@@ -398,12 +377,7 @@ app.put('/blocos/:id', async (req,res) => {
 app.get('/laminas', async (req, res) => {
   try {
     const [results] = await pool.query('SELECT * FROM wssc2.lams');
-    
-    if (results.length === 0){
-      return res.status(404).json({
-        error: 'Nenhuma lâmina encontrada'
-      });
-    }
+  
 
     res.json(results); 
   } catch (err) {
@@ -416,17 +390,13 @@ app.get('/laminas', async (req, res) => {
 app.get('/laminas/andares/:andarId', async (req, res) => {
   try {
     const { andarId } = req.params;
-
+    if (!(await existeNaTabela('andares',andarId))) {
+      return res.status(404).json({error: "Andar não encontrado!"})
+    }
     const [results] = await pool.query(
       'SELECT * FROM lams WHERE andarId = ? ORDER BY posicaoLam',
       [andarId]
     );
-
-    if (results.length === 0){
-      return res.status(404).json({
-        error: 'Nenhuma lâmina encontrada'
-      });
-    }
 
     res.json(results);
 
@@ -443,6 +413,9 @@ app.get('/laminas/andares/:andarId', async (req, res) => {
 app.get('/laminas/buffers/:bufferId', async (req, res) => {
   try {
     const {bufferId} = req.params
+    if (!(await existeNaTabela('buffers',bufferId))) {
+      return res.status(404).json({error: "Buffer não encontrado!"})
+    }
     const [results] = await pool.query('SELECT * FROM wssc2.lams WHERE bufferId = ?',
       [bufferId]);
 
@@ -520,12 +493,6 @@ app.put('/laminas/:id', async (req, res) => {
 app.get('/ops', async (req, res) => {
   try {
     const [results] = await pool.query('SELECT * FROM wssc2.ops');
-    
-    if (results.length === 0){
-      return res.status(404).json({
-        error: 'Nenhuma OP encontrada'
-      });
-    }
 
     res.json(results); 
   } catch (err) {
@@ -641,12 +608,6 @@ app.get('/tampas', async (req, res) => {
   try {
     const [results] = await pool.query('SELECT * FROM wssc2.tampas');
     
-    if (results.length === 0){
-      return res.status(404).json({
-        error: 'Nenhuma tampa encontrada'
-      });
-    }
-
     res.json(results); 
   } catch (err) {
     console.error(err);
@@ -754,16 +715,13 @@ app.get('/andares', async (req, res) => {
 app.get('/andares/:opId', async (req, res) => {
   try {
     const { opId } = req.params;
+    if (!(await existeNaTabela('ops',opId))) {
+      return res.status(404).json({error: "OP não encontrada!"})
+    }
     const [results] = await pool.query(
       'SELECT * FROM andares WHERE productionOrder = ? ORDER BY posicaoAndar',
       [opId]
     );
-
-        if (results.length === 0){
-      return res.status(404).json({
-        error: 'Nenhum andar encontrado'
-      });
-    }
 
     res.json(results);
 
