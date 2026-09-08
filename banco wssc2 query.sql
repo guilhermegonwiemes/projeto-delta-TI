@@ -79,6 +79,8 @@ ALTER TABLE andares RENAME COLUMN posicao_andar TO posicaoAndar ;
 
 ALTER TABLE cores_lams MODIFY COLUMN id INT AUTO_INCREMENT;
 
+ALTER TABLE ops RENAME COLUMN id_tampa TO tampaId;
+
 DROP TABLE wssc2.lams;
 
 DROP TABLE wssc2.andares;
