@@ -419,12 +419,6 @@ app.get('/laminas/buffers/:bufferId', async (req, res) => {
     const [results] = await pool.query('SELECT * FROM wssc2.lams WHERE bufferId = ?',
       [bufferId]);
 
-    if (results.length === 0){
-      return res.status(404).json({
-        error: 'Nenhuma lâmina encontrada'
-      });
-    }
-
     res.json(results); 
   } catch (err) {
     console.error(err);
@@ -698,12 +692,6 @@ app.get('/andares', async (req, res) => {
       ...andar,
       laminasIds: andar.laminasIds ? andar.laminasIds.split(',').map(Number) : []
     }));
-
-    if (andares.length === 0){
-      return res.status(404).json({
-        error: 'Nenhum andar encontrado'
-      });
-    }
 
     res.json(response);
   } catch (err) {
