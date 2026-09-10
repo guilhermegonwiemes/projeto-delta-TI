@@ -199,8 +199,6 @@ Matéria-prima base, disponível em um armazém até ser usada para montar um an
   "storageId": 1
 }
 ```
-> `color` é o `id` de uma cor (`cores_lams`). `storageId` é o `id` do armazém onde o bloco está guardado (pode ser `null` quando o bloco já foi usado em um andar).
-
 ---
 
 ### Lâminas
